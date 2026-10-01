@@ -1,0 +1,528 @@
+
+#############################################################
+# SCENARIO 1: Multi-criteria suitability ranking
+#############################################################
+Same location (Old Town), different severity: the winner changes.
+
+Ranking for MEDICAL severity 1:
+  Unit  ETA(min)  Score    Profile
+  A1    6.8       -4.80    triage 3, paramedic
+  A4    8.4       -5.60    triage 5, paramedic
+  A3    14.0      -11.60   triage 4, paramedic
+  A2    14.0      -13.20   triage 2, no paramedic
+
+Ranking for MEDICAL severity 5:
+  Unit  ETA(min)  Score    Profile
+  A4    8.4       5.60     triage 5, paramedic
+  A1    6.8       3.20     triage 3, paramedic
+  A3    14.0      -2.00    triage 4, paramedic
+  A2    14.0      -10.00   triage 2, no paramedic
+
+Events:
+[t=   0.00] INC#0 created: MEDICAL sev 5 at Old Town
+[t=   0.00] A4 -> INC#0 at Old Town (ETA 8.4 min, score 5.60)
+[t=   0.00] INC#1 created: MEDICAL sev 1 at Old Town
+[t=   0.00] A1 -> INC#1 at Old Town (ETA 6.8 min, score -4.80)
+
+==================== COMMAND CENTER ====================
+KPIs  t=3.0 min
+  incidents created/resolved : 2 / 0
+  queue depth (max)          : 0 (0)
+  unit dispatches            : 2  (co-dispatch packages: 0)
+  preemptions                : 0
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 0
+  mean response time         : 0.0 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 28.6 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    EN_ROUTE_INCIDENT      North Hub > Old Town        Old Town          #1    3.8
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    EN_ROUTE_INCIDENT      City General > North Hub    Old Town          #0    4.1
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    MEDICAL  5    Old Town          DISPATCHED  A4            0.0      -          
+#1    MEDICAL  1    Old Town          DISPATCHED  A1            0.0      -          
+
+V2X HAZARDS
+  (none active)
+========================================================
+[t=   6.80] A1 ON SCENE at INC#1 (Old Town), working 10 min
+[t=   7.14] A4 ON SCENE at INC#0 (Old Town), working 18 min
+[t=  16.80] A1 finished on scene at INC#1, transporting patient
+[t=  16.80] INC#1 RESOLVED
+[t=  25.14] A4 finished on scene at INC#0, transporting patient
+[t=  25.14] INC#0 RESOLVED
+[t=  25.20] A1 arrived at City General (turnover 10 min)
+[t=  33.54] A4 arrived at City General (turnover 10 min)
+[t=  35.20] A1 turnover complete at City General, returning to base
+[t=  40.80] A1 back at base (Station Alpha), available
+[t=  43.54] A4 turnover complete at City General, returning to base
+[t=  43.54] A4 back at base (City General), available
+
+--- FINAL STATE ---
+==================== COMMAND CENTER ====================
+KPIs  t=44.0 min
+  incidents created/resolved : 2 / 2
+  queue depth (max)          : 0 (0)
+  unit dispatches            : 2  (co-dispatch packages: 0)
+  preemptions                : 0
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 0
+  mean response time         : 7.0 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 27.4 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    IDLE_STATION           Station Alpha               -                 -     -
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    IDLE_STATION           City General                -                 -     -
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    MEDICAL  5    Old Town          RESOLVED    -             0.0      7.1        
+#1    MEDICAL  1    Old Town          RESOLVED    -             0.0      6.8        
+
+V2X HAZARDS
+  (none active)
+========================================================
+
+#############################################################
+# SCENARIO 2: V2X dynamic rerouting (closure + congestion)
+#############################################################
+[t=   0.00] INC#0 created: MEDICAL sev 3 at Riverside
+[t=   0.00] A4 -> INC#0 at Riverside (ETA 8.4 min, score 0.00)
+[t=   1.00] V2X HAZARD#0: road North Hub <-> Riverside CLOSED - overturned truck
+
+==================== COMMAND CENTER ====================
+KPIs  t=2.5 min
+  incidents created/resolved : 1 / 0
+  queue depth (max)          : 0 (0)
+  unit dispatches            : 1  (co-dispatch packages: 0)
+  preemptions                : 0
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 0
+  mean response time         : 0.0 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 14.3 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    IDLE_STATION           Station Alpha               -                 -     -
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    EN_ROUTE_INCIDENT      City General > North Hub    Riverside         #0    -
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    MEDICAL  3    Riverside         DISPATCHED  A4            0.0      -          
+
+V2X HAZARDS
+  #0 CLOSURE on North Hub <-> Riverside - overturned truck
+========================================================
+[t=   3.60] A4 REROUTED around changed road conditions (new ETA 12.0 min)
+[t=   4.00] V2X HAZARD#1: road Central <-> East Hub congestion x3.0 - stadium traffic
+[t=   7.20] A4 REROUTED around changed road conditions (new ETA 10.8 min)
+[t=  18.00] A4 ON SCENE at INC#0 (Riverside), working 14 min
+[t=  32.00] A4 finished on scene at INC#0, transporting patient
+[t=  32.00] INC#0 RESOLVED
+[t=  35.75] A4 arrived at Eastside Medical (turnover 10 min)
+[t=  45.75] A4 turnover complete at Eastside Medical, returning to base
+[t=  55.22] A4 back at base (City General), available
+
+--- FINAL STATE ---
+==================== COMMAND CENTER ====================
+KPIs  t=55.5 min
+  incidents created/resolved : 1 / 1
+  queue depth (max)          : 0 (0)
+  unit dispatches            : 1  (co-dispatch packages: 0)
+  preemptions                : 0
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 2
+  mean response time         : 18.0 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 14.2 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    IDLE_STATION           Station Alpha               -                 -     -
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    IDLE_STATION           City General                -                 -     -
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    MEDICAL  3    Riverside         RESOLVED    -             0.0      18.0       
+
+V2X HAZARDS
+  #0 CLOSURE on North Hub <-> Riverside - overturned truck
+  #1 CONGESTION on Central <-> East Hub (x3.0) - stadium traffic
+========================================================
+
+#############################################################
+# SCENARIO 3: Heterogeneous co-dispatch and atomicity
+#############################################################
+[t=   0.00] INC#0 created: FIRE sev 5 at Industrial Park
+[t=   0.00] E2 -> INC#0 at Industrial Park (ETA 14.0 min, score -3.00)
+[t=   0.00] A3 -> INC#0 at Industrial Park (ETA 6.8 min, score 5.20)
+[t=   0.00] INC#0 co-dispatch package committed atomically (2 units)
+[t=   0.00] INC#1 created: MEDICAL sev 3 at Harbor
+[t=   0.00] A4 -> INC#1 at Harbor (ETA 8.8 min, score -0.45)
+[t=   0.00] INC#2 created: MEDICAL sev 3 at Old Town
+[t=   0.00] A1 -> INC#2 at Old Town (ETA 6.8 min, score -0.80)
+[t=   0.00] INC#3 created: MEDICAL sev 3 at Riverside
+[t=   0.00] A2 -> INC#3 at Riverside (ETA 6.8 min, score -4.40)
+
+All four ambulances are now committed. A severity-4 rescue needs
+1 engine + 1 ambulance; idle engines must NOT be taken until both exist.
+
+[t=   0.00] INC#4 created: RESCUE sev 4 at Old Town
+[t=   0.00] INC#4 queued (no complete unit package available)
+
+==================== COMMAND CENTER ====================
+KPIs  t=0.0 min
+  incidents created/resolved : 5 / 0
+  queue depth (max)          : 1 (1)
+  unit dispatches            : 5  (co-dispatch packages: 1)
+  preemptions                : 0
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 0
+  mean response time         : 0.0 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 0.0 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    EN_ROUTE_INCIDENT      Station Alpha > North Hub   Old Town          #2    6.8
+A2    AMBULANCE    EN_ROUTE_INCIDENT      Station Bravo > East Hub    Riverside         #3    6.8
+A3    AMBULANCE    EN_ROUTE_INCIDENT      Station Charlie > South Hub Industrial Park   #0    5.8
+A4    AMBULANCE    EN_ROUTE_INCIDENT      City General > East Hub     Harbor            #1    8.8
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  EN_ROUTE_INCIDENT      Station Bravo > East Hub    Industrial Park   #0    11.9
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    FIRE     5    Industrial Park   DISPATCHED  E2,A3         0.0      -          
+#1    MEDICAL  3    Harbor            DISPATCHED  A4            0.0      -          
+#2    MEDICAL  3    Old Town          DISPATCHED  A1            0.0      -          
+#3    MEDICAL  3    Riverside         DISPATCHED  A2            0.0      -          
+#4    RESCUE   4    Old Town          QUEUED      -             0.0      -          waiting 
+
+V2X HAZARDS
+  (none active)
+========================================================
+[t=   5.78] A3 ON SCENE at INC#0 (Industrial Park), working 18 min
+[t=   6.80] A1 ON SCENE at INC#2 (Old Town), working 14 min
+[t=   6.80] A2 ON SCENE at INC#3 (Riverside), working 14 min
+[t=   8.85] A4 ON SCENE at INC#1 (Harbor), working 14 min
+[t=  11.90] E2 ON SCENE at INC#0 (Industrial Park), working 30 min
+[t=  20.80] A1 finished on scene at INC#2, transporting patient
+[t=  20.80] INC#2 RESOLVED
+[t=  20.80] A2 finished on scene at INC#3, transporting patient
+[t=  20.80] INC#3 RESOLVED
+[t=  22.85] A4 finished on scene at INC#1, transporting patient
+[t=  22.85] INC#1 RESOLVED
+[t=  23.78] A3 finished on scene at INC#0, transporting patient
+[t=  24.55] A2 arrived at Eastside Medical (turnover 10 min)
+[t=  29.20] A1 arrived at City General (turnover 10 min)
+[t=  31.70] A4 arrived at City General (turnover 10 min)
+[t=  34.43] A3 arrived at City General (turnover 10 min)
+[t=  34.55] A2 turnover complete at Eastside Medical, returning to base
+[t=  34.55] E1 -> INC#4 at Old Town (ETA 6.8 min, score -6.80)
+[t=  34.55] A2 -> INC#4 at Old Town (ETA 17.7 min, score -17.52)
+[t=  34.55] INC#4 co-dispatch package committed atomically (2 units)
+[t=  39.20] A1 turnover complete at City General, returning to base
+[t=  40.33] E1 ON SCENE at INC#4 (Old Town), working 26 min
+[t=  41.70] A4 turnover complete at City General, returning to base
+[t=  41.70] A4 back at base (City General), available
+[t=  41.90] E2 finished on scene at INC#0, returning to base
+[t=  41.90] INC#0 RESOLVED
+[t=  44.43] A3 turnover complete at City General, returning to base
+[t=  44.80] A1 back at base (Station Alpha), available
+[t=  50.17] A2 ON SCENE at INC#4 (Old Town), working 16 min
+[t=  52.28] A3 back at base (Station Charlie), available
+[t=  55.90] E2 back at base (Station Bravo), available
+[t=  66.17] A2 finished on scene at INC#4, transporting patient
+[t=  66.33] E1 finished on scene at INC#4, returning to base
+[t=  66.33] INC#4 RESOLVED
+[t=  73.13] E1 back at base (Station Alpha), available
+[t=  74.57] A2 arrived at City General (turnover 10 min)
+[t=  84.57] A2 turnover complete at City General, returning to base
+[t=  90.32] A2 back at base (Station Bravo), available
+
+--- FINAL STATE ---
+==================== COMMAND CENTER ====================
+KPIs  t=91.0 min
+  incidents created/resolved : 5 / 5
+  queue depth (max)          : 0 (1)
+  unit dispatches            : 7  (co-dispatch packages: 2)
+  preemptions                : 0
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 0
+  mean response time         : 13.7 min
+  mean queue wait            : 34.5 min
+  fleet utilisation          : 50.8 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    IDLE_STATION           Station Alpha               -                 -     -
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    IDLE_STATION           City General                -                 -     -
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    FIRE     5    Industrial Park   RESOLVED    -             0.0      5.8        
+#1    MEDICAL  3    Harbor            RESOLVED    -             0.0      8.8        
+#2    MEDICAL  3    Old Town          RESOLVED    -             0.0      6.8        
+#3    MEDICAL  3    Riverside         RESOLVED    -             0.0      6.8        
+#4    RESCUE   4    Old Town          RESOLVED    -             0.0      40.3       
+
+V2X HAZARDS
+  (none active)
+========================================================
+
+#############################################################
+# SCENARIO 4: Severity-5 preemption, queue aging and starvation guard
+#############################################################
+[t=   0.00] INC#0 created: MEDICAL sev 2 at Harbor
+[t=   0.00] A3 -> INC#0 at Harbor (ETA 6.8 min, score -2.00)
+[t=   0.00] INC#1 created: MEDICAL sev 2 at Industrial Park
+[t=   0.00] A4 -> INC#1 at Industrial Park (ETA 10.6 min, score -5.05)
+[t=   0.00] INC#2 created: MEDICAL sev 2 at West Hub
+[t=   0.00] A1 -> INC#2 at West Hub (ETA 9.2 min, score -5.20)
+[t=   0.00] INC#3 created: MEDICAL sev 2 at Riverside
+[t=   0.00] A2 -> INC#3 at Riverside (ETA 6.8 min, score -5.20)
+[t=   0.00] INC#4 created: MEDICAL sev 1 at Old Town
+[t=   0.00] INC#4 queued (no complete unit package available)
+
+Fleet saturated, severity-1 call waiting. A severity-5 call arrives:
+[t=   2.00] INC#5 created: MEDICAL sev 5 at Central
+[t=   2.00] PREEMPTION: A4 reclaimed from INC#1 (sev 2) for INC#5 (sev 5)
+[t=   2.00] INC#1 returned to the queue
+[t=   2.00] A4 -> INC#5 at Central (ETA 0.2 min, score 13.75)
+
+==================== COMMAND CENTER ====================
+KPIs  t=2.0 min
+  incidents created/resolved : 6 / 0
+  queue depth (max)          : 2 (2)
+  unit dispatches            : 5  (co-dispatch packages: 0)
+  preemptions                : 1
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 0
+  mean response time         : 0.0 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 57.1 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    EN_ROUTE_INCIDENT      North Hub > Central         West Hub          #2    7.2
+A2    AMBULANCE    EN_ROUTE_INCIDENT      East Hub > Riverside        Riverside         #3    4.8
+A3    AMBULANCE    EN_ROUTE_INCIDENT      South Hub > Harbor          Harbor            #0    4.8
+A4    AMBULANCE    EN_ROUTE_INCIDENT      City General > Central      Central           #5    0.2
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    MEDICAL  2    Harbor            DISPATCHED  A3            0.0      -          
+#1    MEDICAL  2    Industrial Park   QUEUED      -             0.0      -          waiting preempted x1
+#2    MEDICAL  2    West Hub          DISPATCHED  A1            0.0      -          
+#3    MEDICAL  2    Riverside         DISPATCHED  A2            0.0      -          
+#4    MEDICAL  1    Old Town          QUEUED      -             0.0      -          waiting 
+#5    MEDICAL  5    Central           DISPATCHED  A4            2.0      -          
+
+V2X HAZARDS
+  (none active)
+========================================================
+[t=   2.25] A4 ON SCENE at INC#5 (Central), working 18 min
+[t=   6.80] A2 ON SCENE at INC#3 (Riverside), working 12 min
+[t=   6.80] A3 ON SCENE at INC#0 (Harbor), working 12 min
+[t=   9.20] A1 ON SCENE at INC#2 (West Hub), working 12 min
+[t=  18.80] A2 finished on scene at INC#3, transporting patient
+[t=  18.80] INC#3 RESOLVED
+[t=  18.80] A3 finished on scene at INC#0, transporting patient
+[t=  18.80] INC#0 RESOLVED
+[t=  20.25] A4 finished on scene at INC#5, transporting patient
+[t=  20.25] INC#5 RESOLVED
+[t=  21.20] A1 finished on scene at INC#2, transporting patient
+[t=  21.20] INC#2 RESOLVED
+[t=  22.50] A4 arrived at City General (turnover 10 min)
+[t=  22.55] A2 arrived at Eastside Medical (turnover 10 min)
+[t=  27.05] A1 arrived at City General (turnover 10 min)
+[t=  27.65] A3 arrived at City General (turnover 10 min)
+[t=  32.50] A4 turnover complete at City General, returning to base
+[t=  32.50] A4 back at base (City General), available
+[t=  32.50] A4 -> INC#1 at Industrial Park (ETA 10.6 min, score -5.05)
+[t=  32.55] A2 turnover complete at Eastside Medical, returning to base
+[t=  32.55] A2 -> INC#4 at Old Town (ETA 17.7 min, score -19.92)
+[t=  37.05] A1 turnover complete at City General, returning to base
+[t=  37.65] A3 turnover complete at City General, returning to base
+[t=  42.65] A1 back at base (Station Alpha), available
+[t=  43.15] A4 ON SCENE at INC#1 (Industrial Park), working 12 min
+[t=  45.50] A3 back at base (Station Charlie), available
+[t=  50.27] A2 ON SCENE at INC#4 (Old Town), working 10 min
+[t=  55.15] A4 finished on scene at INC#1, transporting patient
+[t=  55.15] INC#1 RESOLVED
+[t=  60.27] A2 finished on scene at INC#4, transporting patient
+[t=  60.27] INC#4 RESOLVED
+[t=  65.80] A4 arrived at City General (turnover 10 min)
+[t=  68.67] A2 arrived at City General (turnover 10 min)
+[t=  75.80] A4 turnover complete at City General, returning to base
+[t=  75.80] A4 back at base (City General), available
+[t=  78.67] A2 turnover complete at City General, returning to base
+[t=  84.42] A2 back at base (Station Bravo), available
+
+--- FINAL STATE ---
+==================== COMMAND CENTER ====================
+KPIs  t=85.0 min
+  incidents created/resolved : 6 / 6
+  queue depth (max)          : 0 (2)
+  unit dispatches            : 7  (co-dispatch packages: 0)
+  preemptions                : 1
+  stagings / resumes         : 0 / 0
+  dynamic reroutes           : 0
+  mean response time         : 19.4 min
+  mean queue wait            : 31.5 min
+  fleet utilisation          : 41.7 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    IDLE_STATION           Station Alpha               -                 -     -
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    IDLE_STATION           City General                -                 -     -
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    MEDICAL  2    Harbor            RESOLVED    -             0.0      6.8        
+#1    MEDICAL  2    Industrial Park   RESOLVED    -             0.0      43.2       preempted x1
+#2    MEDICAL  2    West Hub          RESOLVED    -             0.0      9.2        
+#3    MEDICAL  2    Riverside         RESOLVED    -             0.0      6.8        
+#4    MEDICAL  1    Old Town          RESOLVED    -             0.0      50.3       
+#5    MEDICAL  5    Central           RESOLVED    -             2.0      0.2        
+
+V2X HAZARDS
+  (none active)
+========================================================
+
+#############################################################
+# SCENARIO 5: Perimeter staging and automatic resumption
+#############################################################
+[t=   0.00] V2X HAZARD#0: road Harbor <-> Hillcrest CLOSED - landslide
+[t=   0.00] INC#0 created: FIRE sev 3 at Hillcrest
+[t=   0.00] E2 -> INC#0: incident unreachable, staging at Harbor (ETA 22.1 min, score -18.50)
+[t=   7.10] E2 STAGED at Harbor: INC#0 at Hillcrest is cut off
+
+==================== COMMAND CENTER ====================
+KPIs  t=20.0 min
+  incidents created/resolved : 1 / 0
+  queue depth (max)          : 0 (0)
+  unit dispatches            : 1  (co-dispatch packages: 0)
+  preemptions                : 0
+  stagings / resumes         : 1 / 0
+  dynamic reroutes           : 0
+  mean response time         : 0.0 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 14.3 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    IDLE_STATION           Station Alpha               -                 -     -
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    IDLE_STATION           City General                -                 -     -
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  STAGED_AT_PERIMETER    Harbor                      Harbor            #0    -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    FIRE     3    Hillcrest         DISPATCHED  E2            0.0      -          
+
+V2X HAZARDS
+  #0 CLOSURE on Harbor <-> Hillcrest - landslide
+========================================================
+[t=  25.00] V2X HAZARD#0 cleared
+[t=  25.00] E2 corridor to Hillcrest cleared: resuming transit to INC#0
+[t=  29.65] E2 ON SCENE at INC#0 (Hillcrest), working 22 min
+[t=  51.65] E2 finished on scene at INC#0, returning to base
+[t=  51.65] INC#0 RESOLVED
+[t=  63.40] E2 back at base (Station Bravo), available
+
+--- FINAL STATE ---
+==================== COMMAND CENTER ====================
+KPIs  t=64.0 min
+  incidents created/resolved : 1 / 1
+  queue depth (max)          : 0 (0)
+  unit dispatches            : 1  (co-dispatch packages: 0)
+  preemptions                : 0
+  stagings / resumes         : 1 / 1
+  dynamic reroutes           : 0
+  mean response time         : 29.6 min
+  mean queue wait            : 0.0 min
+  fleet utilisation          : 14.2 %
+
+FLEET
+Unit  Type         State                  Location                    Destination       Inc   ETA/Timer(min)
+----------------------------------------------------------------------------------------------------------
+A1    AMBULANCE    IDLE_STATION           Station Alpha               -                 -     -
+A2    AMBULANCE    IDLE_STATION           Station Bravo               -                 -     -
+A3    AMBULANCE    IDLE_STATION           Station Charlie             -                 -     -
+A4    AMBULANCE    IDLE_STATION           City General                -                 -     -
+E1    FIRE_ENGINE  IDLE_STATION           Station Alpha               -                 -     -
+E2    FIRE_ENGINE  IDLE_STATION           Station Bravo               -                 -     -
+E3    FIRE_ENGINE  IDLE_STATION           Station Charlie             -                 -     -
+
+INCIDENTS
+ID    Type     Sev  Location          Status      Units         Created  Response   Notes
+----------------------------------------------------------------------------------------------
+#0    FIRE     3    Hillcrest         RESOLVED    -             0.0      29.6       
+
+V2X HAZARDS
+  (none active)
+========================================================
