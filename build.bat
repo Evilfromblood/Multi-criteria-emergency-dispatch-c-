@@ -1,15 +1,24 @@
 @echo off
-REM Build + test with Visual Studio (MSVC) and CMake.
-REM Run from a "Developer Command Prompt for VS" (or any shell where cmake is on PATH).
 setlocal
-cmake -S . -B build || goto :error
-cmake --build build --config Release || goto :error
-pushd build
-ctest -C Release --output-on-failure || (popd & goto :error)
-popd
+if exist "C:\msys64\ucrt64\bin\g++.exe" (
+    set "PATH=C:\msys64\ucrt64\bin;%PATH%"
+)
+echo Compiling V2X Emergency Dispatch...
+g++ -std=c++17 -Wall -Wextra -Iinclude src\road_network.cpp src\router.cpp src\world.cpp src\motion.cpp src\dispatcher.cpp src\simulation.cpp src\telemetry.cpp src\scenario.cpp src\main.cpp -o dispatch_demo.exe
+if %ERRORLEVEL% NEQ 0 (
+    echo Build FAILED.
+    exit /b 1
+)
+
+echo Compiling Tests...
+g++ -std=c++17 -Wall -Wextra -Iinclude src\road_network.cpp src\router.cpp src\world.cpp src\motion.cpp src\dispatcher.cpp src\simulation.cpp src\telemetry.cpp src\scenario.cpp tests\test_main.cpp -o dispatch_tests.exe
+if %ERRORLEVEL% NEQ 0 (
+    echo Test Build FAILED.
+    exit /b 1
+)
+
 echo.
-echo Build OK.  Run:  build\Release\emergency_dispatch.exe   (or run_demo.bat)
-goto :eof
-:error
-echo Build FAILED.
-exit /b 1
+echo Running unit tests:
+dispatch_tests.exe
+echo.
+echo Build OK. Run: dispatch_demo.exe --demo (or run_demo.bat)
