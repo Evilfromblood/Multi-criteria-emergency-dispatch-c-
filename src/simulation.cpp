@@ -18,11 +18,13 @@ Simulation::Simulation(CityData city, DispatchPolicy policy)
 void Simulation::load(const CityData& city) {
     world_.net = city.net;
     world_.fleet = city.fleet;
+    world_.hospitals = city.hospitals;
     for (std::size_t i = 0; i < world_.fleet.size(); ++i) {
         Vehicle& v = world_.fleet[i];
         v.id = static_cast<VehicleId>(i);
         v.node = v.base;
         v.state = VS::IdleStation;
+        if (v.maxWaterLiters <= 0.0) v.maxWaterLiters = v.waterLiters;
         world_.net.node(v.base);  // validate base
     }
 }
@@ -264,6 +266,9 @@ void Simulation::onNodeReached(Vehicle& v) {
                 v.destination = -1;
                 v.holding = false;
                 v.speedFactor = 1.0;
+                if (v.type == VehicleType::FireEngine) {
+                    v.waterLiters = v.maxWaterLiters;
+                }
                 std::snprintf(buf, sizeof buf, "%s back at base (%s), available",
                               v.callsign.c_str(), world_.nodeName(v.base).c_str());
                 world_.log(buf);
@@ -328,11 +333,19 @@ bool Simulation::replan(Vehicle& v) {
 NodeId Simulation::chooseHospital(NodeId from) const {
     const ShortestPathTree tree = dijkstra(world_.net, from);
     NodeId best = -1;
-    double bestD = kInf;
+    double bestCost = kInf;
     for (NodeId h : world_.net.nodesOfKind(NodeKind::Hospital)) {
         const double d = tree.dist[static_cast<std::size_t>(h)];
-        if (d < bestD - kEps) {
-            bestD = d;
+        if (d == kInf) continue;
+        double cost = d;
+        auto it = std::find_if(world_.hospitals.begin(), world_.hospitals.end(),
+                               [h](const Hospital& hosp) { return hosp.node == h; });
+        if (it != world_.hospitals.end()) {
+            if (it->onDivert) cost += world_.policy.hospitalDivertPenaltyMinutes;
+            cost += it->queueDelayMinutes;
+        }
+        if (cost < bestCost - kEps) {
+            bestCost = cost;
             best = h;
         }
     }
@@ -350,6 +363,11 @@ void Simulation::arriveOnScene(Vehicle& v) {
     v.headingToStaging = false;
     v.plan.clear();
     v.timer = sceneMinutes(v, inc);
+    if (v.type == VehicleType::FireEngine && inc.type == IncidentType::Fire) {
+        const double needed = inc.severity * 400.0;
+        const double used = std::min(v.waterLiters, needed);
+        v.waterLiters -= used;
+    }
     if (inc.firstArrivalAt < 0.0) {
         inc.firstArrivalAt = world_.now;
         inc.status = IncidentStatus::OnScene;

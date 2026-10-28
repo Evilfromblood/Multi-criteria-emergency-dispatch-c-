@@ -39,6 +39,8 @@ public:
     bool runUntilQuiet(double maxMinutes);
     void reset();
 
+    NodeId chooseHospital(NodeId from) const;
+
 private:
     struct Scheduled {
         std::string label;
@@ -57,7 +59,6 @@ private:
     void completeScene(Vehicle& v);
     void resolveIncident(Incident& inc);
     void rescaleForEdge(EdgeId edge);
-    NodeId chooseHospital(NodeId from) const;
     double sceneMinutes(const Vehicle& v, const Incident& inc) const;
     double nextEventDelay() const;
 

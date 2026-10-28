@@ -26,6 +26,15 @@ struct DispatchPolicy {
     int signalPreemptionMinSeverity = 4; // traffic-signal preemption for severe calls
     double signalPreemptionFactor = 0.85;  // hop-time multiplier when signals are preempted
     double hospitalTurnoverMinutes = 10.0;
+    double hospitalDivertPenaltyMinutes = 30.0;
+};
+
+struct Hospital {
+    NodeId node = 0;
+    int bedCapacity = 10;
+    int occupiedBeds = 0;
+    bool onDivert = false;       // when true, ambulances divert to other hospitals if possible
+    double queueDelayMinutes = 0.0;
 };
 
 struct Vehicle {
@@ -35,10 +44,11 @@ struct Vehicle {
     NodeId base = 0;
 
     // capability profile
-    int triageLevel = 0;       // ambulances: 1 (BLS) .. 5 (advanced trauma)
-    bool paramedic = false;    // ambulances
-    double waterLiters = 0.0;  // fire engines
-    bool ladder = false;       // fire engines
+    int triageLevel = 0;         // ambulances: 1 (BLS) .. 5 (advanced trauma)
+    bool paramedic = false;      // ambulances
+    double waterLiters = 0.0;    // fire engines
+    double maxWaterLiters = 0.0; // fire engine tank capacity
+    bool ladder = false;         // fire engines
 
     // lifecycle state
     VehicleState state = VehicleState::IdleStation;

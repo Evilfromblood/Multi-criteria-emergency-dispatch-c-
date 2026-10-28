@@ -24,19 +24,20 @@ Command line: `emergency_dispatch.exe --demo | --scenario N | --help`.
 | File | Responsibility |
 |---|---|
 | `include/types.hpp` | ids, enums (vehicle lifecycle states, incident types ...) |
-| `road_network` | nodes, edges, V2X hazards, travel-time formula |
-| `router` | Dijkstra on dynamic costs, perimeter staging node search |
-| `entities.hpp` | Vehicle, Incident, Analytics, `DispatchPolicy` (all weights) |
+| `road_network` | nodes, edges (undirected & one-way), V2X hazards, travel-time formula |
+| `router` | Dijkstra & A* on dynamic costs, perimeter staging node search |
+| `entities.hpp` | Vehicle, Incident, Hospital, Analytics, `DispatchPolicy` (all weights) |
 | `world` / `motion` | shared state + low-level movement helpers |
 | `dispatcher` | suitability scoring, co-dispatch, preemption, queue aging |
-| `simulation` | discrete-event engine and vehicle state machine |
+| `simulation` | discrete-event engine, vehicle state machine, water dynamics, hospital divert |
 | `telemetry` | console dashboard + JSON snapshot (`toJson`) |
 | `scenario` | demo city, fleet and the five scripted scenarios |
-| `tests/test_main.cpp` | 21 tests / 135 checks, registered with CTest |
+| `tests/test_main.cpp` | 25 tests / 150 checks, registered with CTest |
 
 ## Model summary
 
-* **Edge time** = `distance_km / speed_kmh * congestion * 60` minutes; closed edges are unreachable.
+* **Edge time** = `distance_km / speed_kmh * congestion * 60` minutes; closed edges are unreachable. Directed/one-way edges are supported.
+* **Routing**: Full-graph dynamic Dijkstra alongside Euclidean-guided $A^*$ search (`aStar`).
 * **Suitability** (higher is better) = `-wTime*ETA` + severity-scaled triage / paramedic (ambulances) or water / ladder (engines) - small penalty for units still returning to base.
 * **Co-dispatch**: Fire/Rescue severity >= 4 needs 1 engine + 1 ambulance, committed all-or-nothing.
 * **Preemption**: a severity-5 call may reclaim an en-route/staged unit from a severity <= 2 call; the displaced call returns to the queue.
@@ -44,6 +45,8 @@ Command line: `emergency_dispatch.exe --demo | --scenario N | --help`.
 * **Perimeter staging**: if the incident is cut off, the unit drives to the reachable node closest to it, waits, and resumes automatically when the road reopens.
 * **Rerouting**: units re-plan at every junction, so closures/congestion injected mid-trip change their path.
 * **Signal preemption**: severity >= 4 responses run at 0.85x hop time.
+* **Hospital divert & queuing**: patient transport considers both travel time and hospital divert/ER delay.
+* **Consumable dynamics**: fire engines consume water during fire suppression and automatically refill upon returning to station.
 
 All coefficients are simulation heuristics (see `DispatchPolicy`), not
 empirically validated emergency-service values.

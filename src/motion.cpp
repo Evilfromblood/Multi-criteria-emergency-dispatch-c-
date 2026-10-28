@@ -12,7 +12,7 @@ void startHop(World& w, Vehicle& v) {
     if (!e) throw std::logic_error("startHop: route uses a non-existent road");
     double minutes = w.net.edge(*e).travelMinutes() * v.speedFactor;
     if (minutes == kInf)  // road closed after the route was planned: stay committed
-        minutes = w.net.edge(*e).distanceKm / w.net.edge(*e).speedKmh * 60.0;
+        minutes = w.net.edge(*e).distanceKm / w.net.edge(*e).speedKmh * 60.0 * v.speedFactor;
     v.nextNode = next;
     v.hopEdge = *e;
     v.hopRate = minutes;

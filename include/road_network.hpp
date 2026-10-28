@@ -23,6 +23,7 @@ struct Edge {
     double speedKmh = 50.0;
     double congestion = 1.0;  // multiplier >= 1, driven by V2X hazards
     bool blocked = false;     // driven by V2X closures
+    bool oneWay = false;      // if true, travel is only allowed from a -> b
 
     // travel_time_minutes = (distance_km / speed_kmh) * congestion_multiplier * 60
     double travelMinutes() const {
@@ -48,7 +49,7 @@ struct Neighbor {
 class RoadNetwork {
 public:
     NodeId addNode(const std::string& name, double x, double y, NodeKind kind);
-    EdgeId addEdge(NodeId a, NodeId b, double distanceKm, double speedKmh);
+    EdgeId addEdge(NodeId a, NodeId b, double distanceKm, double speedKmh, bool oneWay = false);
 
     const Node& node(NodeId id) const;
     const Edge& edge(EdgeId id) const;
@@ -60,6 +61,7 @@ public:
     std::optional<EdgeId> edgeBetween(NodeId a, NodeId b) const;
     std::vector<NodeId> nodesOfKind(NodeKind kind) const;
     double euclideanKm(NodeId a, NodeId b) const;
+    double maxSpeedKmh() const;
 
     // V2X hazard broadcasts. Several hazards may overlap on one edge:
     // the worst congestion multiplier wins, any active closure blocks the edge.

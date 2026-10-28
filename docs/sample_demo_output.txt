@@ -453,7 +453,7 @@ V2X HAZARDS
 #############################################################
 [t=   0.00] V2X HAZARD#0: road Harbor <-> Hillcrest CLOSED - landslide
 [t=   0.00] INC#0 created: FIRE sev 3 at Hillcrest
-[t=   0.00] E2 -> INC#0: incident unreachable, staging at Harbor (ETA 22.1 min, score -18.50)
+[t=   0.00] E2 -> INC#0: incident unreachable, staging at Harbor (ranking ETA 22.1 min incl. cut-off penalty, score -18.50)
 [t=   7.10] E2 STAGED at Harbor: INC#0 at Hillcrest is cut off
 
 ==================== COMMAND CENTER ====================

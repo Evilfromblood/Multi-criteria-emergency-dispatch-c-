@@ -448,6 +448,76 @@ void testResetAndInvalidInput() {
     CHECK(threw);
 }
 
+void testAStarRouting() {
+    const CityData c = buildDemoCity();
+    const std::vector<std::pair<NodeId, NodeId>> pairs = {
+        {Central, Riverside}, {StationAlpha, Hillcrest}, {OldTown, Harbor},
+        {Central, Central}, {WestHub, EastsideMedical}
+    };
+    for (const auto& p : pairs) {
+        const Route dRoute = shortestPath(c.net, p.first, p.second);
+        const Route aRoute = aStar(c.net, p.first, p.second);
+        CHECK(dRoute.reachable == aRoute.reachable);
+        if (dRoute.reachable) {
+            CHECK_NEAR(dRoute.minutes, aRoute.minutes, 1e-6);
+            CHECK(dRoute.path.size() == aRoute.path.size());
+            CHECK(aRoute.path.front() == p.first);
+            CHECK(aRoute.path.back() == p.second);
+        }
+    }
+}
+
+void testOneWayRoads() {
+    RoadNetwork net;
+    const NodeId a = net.addNode("A", 0, 0, NodeKind::Junction);
+    const NodeId b = net.addNode("B", 1, 0, NodeKind::Junction);
+    net.addEdge(a, b, 1.0, 60.0, true);  // One-way: A -> B
+
+    const Route ab = shortestPath(net, a, b);
+    CHECK(ab.reachable);
+    CHECK(ab.path.size() == 2);
+
+    const Route ba = shortestPath(net, b, a);
+    CHECK(!ba.reachable);  // Traversal against one-way direction is disallowed
+}
+
+void testHospitalDivert() {
+    CityData c = buildDemoCity();
+    Hospital cg;
+    cg.node = CityGeneral;
+    cg.onDivert = true;  // City General is on divert
+    Hospital em;
+    em.node = EastsideMedical;
+    em.onDivert = false;
+    c.hospitals = {cg, em};
+
+    Simulation sim(c);
+    // When City General is on divert (+30 min penalty), Eastside Medical becomes the best choice
+    const NodeId chosen = sim.chooseHospital(Central);
+    CHECK(chosen == EastsideMedical);
+}
+
+void testWaterDepletionAndRefill() {
+    CityData c = buildDemoCity();
+    c.fleet.erase(std::remove_if(c.fleet.begin(), c.fleet.end(),
+                                 [](const Vehicle& v) { return v.callsign != "E1"; }),
+                  c.fleet.end());
+    Simulation sim(c);
+    CHECK(sim.world().fleet[0].waterLiters == 3000.0);
+    CHECK(sim.world().fleet[0].maxWaterLiters == 3000.0);
+
+    // Create fire incident: severity 3 -> uses 3 * 400 = 1200 L water
+    sim.createIncident(IncidentType::Fire, 3, NorthHub, "fire scene");
+    sim.advance(5.0);  // E1 arrives on scene
+    CHECK(sim.world().fleet[0].state == VehicleState::OnScene);
+    CHECK_NEAR(sim.world().fleet[0].waterLiters, 1800.0, 1e-6);
+
+    // After resolving scene and returning to station, water tank refills
+    CHECK(sim.runUntilQuiet(120));
+    CHECK(sim.world().fleet[0].state == VehicleState::IdleStation);
+    CHECK_NEAR(sim.world().fleet[0].waterLiters, 3000.0, 1e-6);
+}
+
 struct TestCase {
     const char* name;
     void (*fn)();
@@ -478,6 +548,10 @@ int main() {
         {"closure while en route", testClosureWhileEnRouteToIsolatedNode},
         {"telemetry + scenarios", testScenarioRunnerAndTelemetry},
         {"reset + invalid input", testResetAndInvalidInput},
+        {"A* routing algorithm", testAStarRouting},
+        {"one-way roads", testOneWayRoads},
+        {"hospital divert & routing", testHospitalDivert},
+        {"water depletion and refill", testWaterDepletionAndRefill},
     };
     int failedTests = 0;
     for (const TestCase& t : tests) {

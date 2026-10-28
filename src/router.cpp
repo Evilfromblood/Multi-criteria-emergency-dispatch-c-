@@ -59,6 +59,68 @@ Route shortestPath(const RoadNetwork& net, NodeId from, NodeId to) {
     return extractRoute(dijkstra(net, from), from, to);
 }
 
+Route aStar(const RoadNetwork& net, NodeId from, NodeId to) {
+    net.node(from);  // bounds checks
+    net.node(to);
+    if (from == to) {
+        Route r;
+        r.reachable = true;
+        r.path = {from};
+        r.minutes = 0.0;
+        return r;
+    }
+
+    const std::size_t n = net.nodeCount();
+    const double maxSpd = net.maxSpeedKmh();
+    auto heuristic = [&](NodeId u) -> double {
+        return (net.euclideanKm(u, to) / maxSpd) * 60.0;
+    };
+
+    std::vector<double> gScore(n, kInf);
+    std::vector<NodeId> prev(n, -1);
+    gScore[static_cast<std::size_t>(from)] = 0.0;
+
+    using QItem = std::pair<double, NodeId>;  // {fScore, u}
+    std::priority_queue<QItem, std::vector<QItem>, std::greater<QItem>> pq;
+    pq.push({heuristic(from), from});
+
+    while (!pq.empty()) {
+        const QItem top = pq.top();
+        pq.pop();
+        const double f = top.first;
+        const NodeId u = top.second;
+        if (u == to) break;
+
+        const double g_u = gScore[static_cast<std::size_t>(u)];
+        if (f > g_u + heuristic(u) + kEps) continue;
+
+        for (const Neighbor& nb : net.neighbors(u)) {
+            const double w = net.edge(nb.edge).travelMinutes();
+            if (w == kInf) continue;  // closed road
+            const double ng = g_u + w;
+            const std::size_t v = static_cast<std::size_t>(nb.to);
+            if (ng < gScore[v] - kEps) {
+                gScore[v] = ng;
+                prev[v] = u;
+                const double nf = ng + heuristic(nb.to);
+                pq.push({nf, nb.to});
+            }
+        }
+    }
+
+    Route r;
+    const double total = gScore[static_cast<std::size_t>(to)];
+    if (total == kInf) return r;
+    r.reachable = true;
+    r.minutes = total;
+    for (NodeId cur = to; cur != -1; cur = prev[static_cast<std::size_t>(cur)]) {
+        r.path.push_back(cur);
+        if (cur == from) break;
+    }
+    std::reverse(r.path.begin(), r.path.end());
+    return r;
+}
+
 StagingPlan findStagingNode(const RoadNetwork& net, NodeId from, NodeId incident,
                             const StagingWeights& weights) {
     const ShortestPathTree tree = dijkstra(net, from);

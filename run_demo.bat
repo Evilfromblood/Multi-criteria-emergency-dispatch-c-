@@ -3,8 +3,8 @@ setlocal
 if exist "C:\msys64\ucrt64\bin\g++.exe" (
     set "PATH=C:\msys64\ucrt64\bin;%PATH%"
 )
-if not exist "dispatch_demo.exe" (
-    echo dispatch_demo.exe not found, building first...
+if not exist "emergency_dispatch.exe" (
+    echo emergency_dispatch.exe not found, building first...
     call build.bat
 )
-dispatch_demo.exe --demo
+emergency_dispatch.exe --demo

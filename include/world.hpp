@@ -13,6 +13,7 @@ namespace v2x {
 struct CityData {
     RoadNetwork net;
     std::vector<Vehicle> fleet;
+    std::vector<Hospital> hospitals;
 };
 
 // All mutable simulation state. Shared by the dispatcher and the simulation.
@@ -21,6 +22,7 @@ struct World {
     std::vector<Vehicle> fleet;       // fleet[i].id == i
     std::deque<Incident> incidents;   // incidents[i].id == i (deque: stable references)
     std::vector<IncidentId> queue;    // incidents waiting for units
+    std::vector<Hospital> hospitals;
     DispatchPolicy policy;
     Analytics stats;
     double now = 0.0;                 // simulated minutes

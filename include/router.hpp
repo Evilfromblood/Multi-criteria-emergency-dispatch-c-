@@ -21,6 +21,9 @@ ShortestPathTree dijkstra(const RoadNetwork& net, NodeId source);
 Route extractRoute(const ShortestPathTree& tree, NodeId source, NodeId target);
 Route shortestPath(const RoadNetwork& net, NodeId from, NodeId to);
 
+// A* shortest path search using Euclidean distance heuristic.
+Route aStar(const RoadNetwork& net, NodeId from, NodeId to);
+
 // Policy coefficients for picking a perimeter staging node (simulation heuristic).
 struct StagingWeights {
     double gapKm = 1.0;     // straight-line distance from staging node to incident

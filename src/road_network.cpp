@@ -18,7 +18,7 @@ NodeId RoadNetwork::addNode(const std::string& name, double x, double y, NodeKin
     return n.id;
 }
 
-EdgeId RoadNetwork::addEdge(NodeId a, NodeId b, double distanceKm, double speedKmh) {
+EdgeId RoadNetwork::addEdge(NodeId a, NodeId b, double distanceKm, double speedKmh, bool oneWay) {
     node(a);  // bounds checks (throw std::out_of_range)
     node(b);
     if (a == b) throw std::invalid_argument("addEdge: self loops are not allowed");
@@ -30,9 +30,12 @@ EdgeId RoadNetwork::addEdge(NodeId a, NodeId b, double distanceKm, double speedK
     e.b = b;
     e.distanceKm = distanceKm;
     e.speedKmh = speedKmh;
+    e.oneWay = oneWay;
     edges_.push_back(e);
     adj_[static_cast<std::size_t>(a)].push_back({b, e.id});
-    adj_[static_cast<std::size_t>(b)].push_back({a, e.id});
+    if (!oneWay) {
+        adj_[static_cast<std::size_t>(b)].push_back({a, e.id});
+    }
     return e.id;
 }
 
@@ -63,6 +66,12 @@ double RoadNetwork::euclideanKm(NodeId a, NodeId b) const {
     const Node& na = node(a);
     const Node& nb = node(b);
     return std::hypot(na.x - nb.x, na.y - nb.y);
+}
+
+double RoadNetwork::maxSpeedKmh() const {
+    double m = 0.0;
+    for (const Edge& e : edges_) m = std::max(m, e.speedKmh);
+    return m > 0.0 ? m : 50.0;
 }
 
 HazardId RoadNetwork::injectHazard(EdgeId edgeId, HazardKind kind, double multiplier,
