@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 
+#include "routevis.hpp"
 #include "scenario.hpp"
 #include "telemetry.hpp"
 
@@ -55,15 +56,17 @@ void printMenu() {
                  " 3  Inject V2X hazard            8  Export telemetry JSON\n"
                  " 4  Resolve V2X hazard           9  Show road network / event log\n"
                  " 5  Advance simulation time     10  Reset simulation\n"
+                 "11  Route Visualizer (step-by-step vehicle journey)\n"
                  " 0  Exit\n"
                  "--------------------------------------------------------\n";
 }
 
 void printUsage() {
-    std::cout << "Usage: emergency_dispatch [--demo | --scenario N | --help]\n"
+    std::cout << "Usage: emergency_dispatch [--demo | --scenario N | --route | --help]\n"
                  "  (no arguments)  interactive console menu\n"
                  "  --demo          run all scripted scenarios\n"
-                 "  --scenario N    run scenario N (1.." << kScenarioCount << ")\n";
+                 "  --scenario N    run scenario N (1.." << kScenarioCount << ")\n"
+                 "  --route         interactive step-by-step route visualizer\n";
 }
 
 bool newIncident(Simulation& sim) {
@@ -118,7 +121,7 @@ void interactive() {
     sim.setEcho(&std::cout);
     for (;;) {
         printMenu();
-        const auto choice = askInt("choice> ", 0, 10);
+        const auto choice = askInt("choice> ", 0, 11);
         if (!choice || *choice == 0) return;
         bool ok = true;
         try {
@@ -155,6 +158,7 @@ void interactive() {
                     sim.reset();
                     std::cout << "Simulation reset.\n";
                     break;
+                case 11: ok = runRouteVisualizer(sim, std::cout); break;
                 default: break;
             }
         } catch (const std::exception& e) {
@@ -170,6 +174,11 @@ int main(int argc, char** argv) {
     try {
         if (argc >= 2) {
             const std::string arg = argv[1];
+            if (arg == "--route") {
+                Simulation sim(buildDemoCity());
+                runRouteVisualizer(sim, std::cout);
+                return 0;
+            }
             if (arg == "--demo") {
                 for (int i = 1; i <= kScenarioCount; ++i) runScenario(i, std::cout);
                 return 0;

@@ -16,7 +16,8 @@ add_library(dispatch_core STATIC
   src/dispatcher.cpp
   src/simulation.cpp
   src/telemetry.cpp
-  src/scenario.cpp)
+  src/scenario.cpp
+  src/routevis.cpp)
 target_include_directories(dispatch_core PUBLIC include)
 if(MSVC)
   target_compile_options(dispatch_core PUBLIC /W4 /utf-8 /EHsc)
