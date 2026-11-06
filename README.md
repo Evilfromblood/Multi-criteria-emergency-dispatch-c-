@@ -9,7 +9,7 @@ availability change. Pure C++17 - no external libraries, no web UI.
 Open a *Developer Command Prompt for VS* in this folder:
 
     build.bat                                  :: configure, compile, run tests
-    build\Release\emergency_dispatch.exe       :: interactive menu
+    build\\Release\\emergency_dispatch.exe       :: interactive menu
     run_demo.bat                               :: all 5 scripted scenarios
 
 Manual equivalent: `cmake -S . -B build`, `cmake --build build --config Release`,
@@ -18,6 +18,13 @@ Any C++17 compiler works too (`g++ -std=c++17 -Iinclude src/*.cpp -o dispatch`).
 
 Command line: `emergency_dispatch.exe --demo | --scenario N | --help`.
 `docs/sample_demo_output.txt` holds a full transcript of `--demo`.
+
+## Development and verification
+
+- Keep implementation code compatible with the C++17 language standard.
+- Run the test suite after making changes: `ctest --test-dir build -C Release --output-on-failure`.
+- Use the scripted scenarios (`run_demo.bat` on Windows) to check end-to-end dispatch behavior.
+- Treat dispatch weights and timing coefficients as simulation heuristics; validate them against domain data before using them for operational decisions.
 
 ## Layout
 
